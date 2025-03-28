@@ -1,55 +1,30 @@
 from fastapi import FastAPI, Request
-import uvicorn
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-# Static place recommendations
-places_by_city = {
-    "richmond": [
-        "Virginia Museum of Fine Arts",
-        "Lewis Ginter Botanical Garden",
-        "Maymont Park"
-    ],
-    "norfolk": [
-        "Fort Norfolk",
-        "MacArthur Memorial",
-        "Norfolk Botanical Garden"
-    ],
-    "charlottesville": [
-        "Monticello",
-        "University of Virginia Rotunda",
-        "Downtown Mall"
-    ],
-    "default": [
-        "Colonial Williamsburg",
-        "Blue Ridge Parkway",
-        "Shenandoah National Park"
-    ]
-}
-
-@app.post("/placesWebhook")
-async def places_webhook(request: Request):
-    body = await request.json()
-    parameters = body.get("sessionInfo", {}).get("parameters", {})
-    city = parameters.get("location", "").lower()
-
-    place_list = places_by_city.get(city, places_by_city["default"])
-    places_text = "\n- " + "\n- ".join(place_list)
-
-    response = {
+@app.post("/product")
+async def get_product(request: Request):
+    return JSONResponse({
         "fulfillment_response": {
-            "messages": [
-                {
-                    "text": {
-                        "text": [
-                            f"Here are some great places to visit in {city.title() if city else 'Virginia'}:{places_text}"
-                        ]
-                    }
-                }
-            ]
+            "messages": [{"text": {"text": ["We offer T-shirts, Longsleeves, CDs, Digital Albums, and Tour Movies."]}}]
         }
-    }
-    return response
+    })
 
-# To run locally
-# uvicorn filename:app --reload --port 8000
+@app.post("/price")
+async def get_price(request: Request):
+    return JSONResponse({
+        "fulfillment_response": {
+            "messages": [{"text": {"text": ["A T-shirt costs $25, and a Longsleeve is $30. CDs are $10."]}}]
+        }
+    })
+
+@app.post("/confirmation")
+async def confirm_order(request: Request):
+    body = await request.json()
+    # (Optional) parse values from request to log or use
+    return JSONResponse({
+        "fulfillment_response": {
+            "messages": [{"text": {"text": ["Your order has been placed successfully! Rock on 🤘"]}}]
+        }
+    })
